@@ -1,0 +1,8 @@
+org.xbib.elasticsearch.index.analysis
+org.xbib.elasticsearch.index.analysis.baseform
+org.xbib.elasticsearch.index.analysis.combo
+org.xbib.elasticsearch.index.analysis.decompound
+org.xbib.elasticsearch.index.analysis.german
+org.xbib.elasticsearch.index.analysis.icu
+org.xbib.elasticsearch.index.analysis.langdetect
+org.xbib.elasticsearch.index.analysis.worddelimiter
