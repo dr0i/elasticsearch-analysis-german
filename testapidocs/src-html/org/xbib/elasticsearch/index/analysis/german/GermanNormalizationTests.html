@@ -46,7 +46,7 @@
 <span class="sourceLineNo">038</span>        TokenFilterFactory tokenFilter = analysisService.tokenFilter("umlaut");<a name="line.38"></a>
 <span class="sourceLineNo">039</span>        assertThat(tokenFilter, instanceOf(GermanNormalizationFilterFactory.class));<a name="line.39"></a>
 <span class="sourceLineNo">040</span><a name="line.40"></a>
-<span class="sourceLineNo">041</span>        String source = "Ein schöner Tag in Köln im Café an der Straßenecke";<a name="line.41"></a>
+<span class="sourceLineNo">041</span>        String source = "Ein sch?ner Tag in K?ln im Caf? an der Stra?enecke";<a name="line.41"></a>
 <span class="sourceLineNo">042</span><a name="line.42"></a>
 <span class="sourceLineNo">043</span>        String[] expected = {<a name="line.43"></a>
 <span class="sourceLineNo">044</span>            "Ein",<a name="line.44"></a>
@@ -55,7 +55,7 @@
 <span class="sourceLineNo">047</span>            "in",<a name="line.47"></a>
 <span class="sourceLineNo">048</span>            "Koln",<a name="line.48"></a>
 <span class="sourceLineNo">049</span>            "im",<a name="line.49"></a>
-<span class="sourceLineNo">050</span>            "Café",<a name="line.50"></a>
+<span class="sourceLineNo">050</span>            "Caf?",<a name="line.50"></a>
 <span class="sourceLineNo">051</span>            "an",<a name="line.51"></a>
 <span class="sourceLineNo">052</span>            "der",<a name="line.52"></a>
 <span class="sourceLineNo">053</span>            "Strassenecke"<a name="line.53"></a>
@@ -67,7 +67,7 @@
 <span class="sourceLineNo">059</span><a name="line.59"></a>
 <span class="sourceLineNo">060</span>    }<a name="line.60"></a>
 <span class="sourceLineNo">061</span><a name="line.61"></a>
-<span class="sourceLineNo">062</span>    public AnalysisService createAnalysisService() {<a name="line.62"></a>
+<span class="sourceLineNo">062</span>    private AnalysisService createAnalysisService() {<a name="line.62"></a>
 <span class="sourceLineNo">063</span>        Settings settings = ImmutableSettings.settingsBuilder().loadFromClasspath("org/xbib/elasticsearch/index/analysis/german_normalization_analysis.json").build();<a name="line.63"></a>
 <span class="sourceLineNo">064</span><a name="line.64"></a>
 <span class="sourceLineNo">065</span>        Index index = new Index("test");<a name="line.65"></a>
@@ -89,17 +89,17 @@
 <span class="sourceLineNo">081</span>        return injector.getInstance(AnalysisService.class);<a name="line.81"></a>
 <span class="sourceLineNo">082</span>    }<a name="line.82"></a>
 <span class="sourceLineNo">083</span><a name="line.83"></a>
-<span class="sourceLineNo">084</span>    public static void assertSimpleTSOutput(TokenStream stream,<a name="line.84"></a>
-<span class="sourceLineNo">085</span>            String[] expected) throws IOException {<a name="line.85"></a>
-<span class="sourceLineNo">086</span>        stream.reset();<a name="line.86"></a>
-<span class="sourceLineNo">087</span>        CharTermAttribute termAttr = stream.getAttribute(CharTermAttribute.class);<a name="line.87"></a>
-<span class="sourceLineNo">088</span>        assertNotNull(termAttr);<a name="line.88"></a>
-<span class="sourceLineNo">089</span>        int i = 0;<a name="line.89"></a>
-<span class="sourceLineNo">090</span>        while (stream.incrementToken()) {<a name="line.90"></a>
-<span class="sourceLineNo">091</span>            assertTrue(i &lt; expected.length);<a name="line.91"></a>
-<span class="sourceLineNo">092</span>            assertEquals(expected[i++], termAttr.toString(), "expected different term at index " + i);<a name="line.92"></a>
-<span class="sourceLineNo">093</span>        }<a name="line.93"></a>
-<span class="sourceLineNo">094</span>        assertEquals(i, expected.length, "not all tokens produced");<a name="line.94"></a>
+<span class="sourceLineNo">084</span>    private void assertSimpleTSOutput(TokenStream stream, String[] expected) throws IOException {<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        stream.reset();<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        CharTermAttribute termAttr = stream.getAttribute(CharTermAttribute.class);<a name="line.86"></a>
+<span class="sourceLineNo">087</span>        assertNotNull(termAttr);<a name="line.87"></a>
+<span class="sourceLineNo">088</span>        int i = 0;<a name="line.88"></a>
+<span class="sourceLineNo">089</span>        while (stream.incrementToken()) {<a name="line.89"></a>
+<span class="sourceLineNo">090</span>            assertTrue(i &lt; expected.length);<a name="line.90"></a>
+<span class="sourceLineNo">091</span>            assertEquals(expected[i++], termAttr.toString(), "expected different term at index " + i);<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        }<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        assertEquals(i, expected.length, "not all tokens produced");<a name="line.93"></a>
+<span class="sourceLineNo">094</span>        stream.close();<a name="line.94"></a>
 <span class="sourceLineNo">095</span>    }<a name="line.95"></a>
 <span class="sourceLineNo">096</span>}<a name="line.96"></a>
 

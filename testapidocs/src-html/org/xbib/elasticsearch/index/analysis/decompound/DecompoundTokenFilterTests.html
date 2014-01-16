@@ -46,7 +46,7 @@
 <span class="sourceLineNo">038</span>        TokenFilterFactory tokenFilter = analysisService.tokenFilter("decomp");<a name="line.38"></a>
 <span class="sourceLineNo">039</span>        assertThat(tokenFilter, instanceOf(DecompoundTokenFilterFactory.class));<a name="line.39"></a>
 <span class="sourceLineNo">040</span><a name="line.40"></a>
-<span class="sourceLineNo">041</span>        String source = "Die Jahresfeier der Rechtsanwaltskanzleien auf dem Donaudampfschiff hat viel Ökosteuer gekostet";<a name="line.41"></a>
+<span class="sourceLineNo">041</span>        String source = "Die Jahresfeier der Rechtsanwaltskanzleien auf dem Donaudampfschiff hat viel ?kosteuer gekostet";<a name="line.41"></a>
 <span class="sourceLineNo">042</span><a name="line.42"></a>
 <span class="sourceLineNo">043</span>        String[] expected = {<a name="line.43"></a>
 <span class="sourceLineNo">044</span>            "Die",<a name="line.44"></a>
@@ -72,8 +72,8 @@
 <span class="sourceLineNo">064</span>            "hat",<a name="line.64"></a>
 <span class="sourceLineNo">065</span>            "viel",<a name="line.65"></a>
 <span class="sourceLineNo">066</span>            "viel",<a name="line.66"></a>
-<span class="sourceLineNo">067</span>            "Ökosteuer",<a name="line.67"></a>
-<span class="sourceLineNo">068</span>            "Ökosteuer",<a name="line.68"></a>
+<span class="sourceLineNo">067</span>            "?kosteuer",<a name="line.67"></a>
+<span class="sourceLineNo">068</span>            "?kosteuer",<a name="line.68"></a>
 <span class="sourceLineNo">069</span>            "gekostet",<a name="line.69"></a>
 <span class="sourceLineNo">070</span>            "gekosten"<a name="line.70"></a>
 <span class="sourceLineNo">071</span>        };<a name="line.71"></a>
@@ -81,7 +81,7 @@
 <span class="sourceLineNo">073</span>        assertSimpleTSOutput(tokenFilter.create(tokenizer), expected);<a name="line.73"></a>
 <span class="sourceLineNo">074</span>    }<a name="line.74"></a>
 <span class="sourceLineNo">075</span><a name="line.75"></a>
-<span class="sourceLineNo">076</span>    public AnalysisService createAnalysisService() {<a name="line.76"></a>
+<span class="sourceLineNo">076</span>    private AnalysisService createAnalysisService() {<a name="line.76"></a>
 <span class="sourceLineNo">077</span>        Settings settings = ImmutableSettings.settingsBuilder().loadFromClasspath("org/xbib/elasticsearch/index/analysis/decompound_analysis.json").build();<a name="line.77"></a>
 <span class="sourceLineNo">078</span><a name="line.78"></a>
 <span class="sourceLineNo">079</span>        Index index = new Index("test");<a name="line.79"></a>
@@ -103,17 +103,17 @@
 <span class="sourceLineNo">095</span>        return injector.getInstance(AnalysisService.class);<a name="line.95"></a>
 <span class="sourceLineNo">096</span>    }<a name="line.96"></a>
 <span class="sourceLineNo">097</span><a name="line.97"></a>
-<span class="sourceLineNo">098</span>    public static void assertSimpleTSOutput(TokenStream stream,<a name="line.98"></a>
-<span class="sourceLineNo">099</span>            String[] expected) throws IOException {<a name="line.99"></a>
-<span class="sourceLineNo">100</span>        stream.reset();<a name="line.100"></a>
-<span class="sourceLineNo">101</span>        CharTermAttribute termAttr = stream.getAttribute(CharTermAttribute.class);<a name="line.101"></a>
-<span class="sourceLineNo">102</span>        Assert.assertNotNull(termAttr);<a name="line.102"></a>
-<span class="sourceLineNo">103</span>        int i = 0;<a name="line.103"></a>
-<span class="sourceLineNo">104</span>        while (stream.incrementToken()) {<a name="line.104"></a>
-<span class="sourceLineNo">105</span>            Assert.assertTrue(i &lt; expected.length);<a name="line.105"></a>
-<span class="sourceLineNo">106</span>            Assert.assertEquals(expected[i++], termAttr.toString(), "expected different term at index " + i);<a name="line.106"></a>
-<span class="sourceLineNo">107</span>        }<a name="line.107"></a>
-<span class="sourceLineNo">108</span>        Assert.assertEquals(i, expected.length, "not all tokens produced");<a name="line.108"></a>
+<span class="sourceLineNo">098</span>    private void assertSimpleTSOutput(TokenStream stream, String[] expected) throws IOException {<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        stream.reset();<a name="line.99"></a>
+<span class="sourceLineNo">100</span>        CharTermAttribute termAttr = stream.getAttribute(CharTermAttribute.class);<a name="line.100"></a>
+<span class="sourceLineNo">101</span>        Assert.assertNotNull(termAttr);<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        int i = 0;<a name="line.102"></a>
+<span class="sourceLineNo">103</span>        while (stream.incrementToken()) {<a name="line.103"></a>
+<span class="sourceLineNo">104</span>            Assert.assertTrue(i &lt; expected.length);<a name="line.104"></a>
+<span class="sourceLineNo">105</span>            Assert.assertEquals(expected[i++], termAttr.toString(), "expected different term at index " + i);<a name="line.105"></a>
+<span class="sourceLineNo">106</span>        }<a name="line.106"></a>
+<span class="sourceLineNo">107</span>        Assert.assertEquals(i, expected.length, "not all tokens produced");<a name="line.107"></a>
+<span class="sourceLineNo">108</span>        stream.close();<a name="line.108"></a>
 <span class="sourceLineNo">109</span>    }<a name="line.109"></a>
 <span class="sourceLineNo">110</span>}<a name="line.110"></a>
 
