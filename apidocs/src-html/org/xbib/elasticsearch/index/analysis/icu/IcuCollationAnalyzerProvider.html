@@ -6,175 +6,164 @@
 </head>
 <body>
 <div class="sourceContainer">
-<pre><span class="sourceLineNo">001</span><a name="line.1"></a>
-<span class="sourceLineNo">002</span>package org.xbib.elasticsearch.index.analysis.icu;<a name="line.2"></a>
-<span class="sourceLineNo">003</span><a name="line.3"></a>
-<span class="sourceLineNo">004</span>import com.ibm.icu.text.Collator;<a name="line.4"></a>
-<span class="sourceLineNo">005</span>import com.ibm.icu.text.RuleBasedCollator;<a name="line.5"></a>
-<span class="sourceLineNo">006</span>import com.ibm.icu.util.ULocale;<a name="line.6"></a>
-<span class="sourceLineNo">007</span>import org.apache.lucene.collation.ICUCollationKeyAnalyzer;<a name="line.7"></a>
-<span class="sourceLineNo">008</span>import org.elasticsearch.ElasticsearchIllegalArgumentException;<a name="line.8"></a>
-<span class="sourceLineNo">009</span>import org.elasticsearch.common.inject.Inject;<a name="line.9"></a>
-<span class="sourceLineNo">010</span>import org.elasticsearch.common.inject.assistedinject.Assisted;<a name="line.10"></a>
-<span class="sourceLineNo">011</span>import org.elasticsearch.common.settings.Settings;<a name="line.11"></a>
-<span class="sourceLineNo">012</span>import org.elasticsearch.env.Environment;<a name="line.12"></a>
-<span class="sourceLineNo">013</span>import org.elasticsearch.env.FailedToResolveConfigException;<a name="line.13"></a>
-<span class="sourceLineNo">014</span>import org.elasticsearch.index.Index;<a name="line.14"></a>
-<span class="sourceLineNo">015</span>import org.elasticsearch.index.analysis.AbstractIndexAnalyzerProvider;<a name="line.15"></a>
-<span class="sourceLineNo">016</span>import org.elasticsearch.index.settings.IndexSettings;<a name="line.16"></a>
-<span class="sourceLineNo">017</span><a name="line.17"></a>
-<span class="sourceLineNo">018</span>import java.io.IOException;<a name="line.18"></a>
-<span class="sourceLineNo">019</span><a name="line.19"></a>
-<span class="sourceLineNo">020</span>/**<a name="line.20"></a>
-<span class="sourceLineNo">021</span> * An ICU collation analyzer provider.<a name="line.21"></a>
-<span class="sourceLineNo">022</span> * &lt;p/&gt;<a name="line.22"></a>
-<span class="sourceLineNo">023</span> * There are two ways to configure collation:<a name="line.23"></a>
-<span class="sourceLineNo">024</span> * &lt;p/&gt;<a name="line.24"></a>
-<span class="sourceLineNo">025</span> * &lt;p&gt;The first is simply specifying the locale (defaults to the default locale).<a name="line.25"></a>
-<span class="sourceLineNo">026</span> * The &lt;tt&gt;language&lt;/tt&gt; parameter is the lowercase two-letter ISO-639 code.<a name="line.26"></a>
-<span class="sourceLineNo">027</span> * An additional &lt;tt&gt;country&lt;/tt&gt; and &lt;tt&gt;variant&lt;/tt&gt; can be provided.<a name="line.27"></a>
-<span class="sourceLineNo">028</span> * &lt;p/&gt;<a name="line.28"></a>
-<span class="sourceLineNo">029</span> * &lt;p&gt;The second option is to specify collation rules as defined in the<a name="line.29"></a>
-<span class="sourceLineNo">030</span> * &lt;a href="http://www.icu-project.org/userguide/Collate_Customization.html"&gt;<a name="line.30"></a>
-<span class="sourceLineNo">031</span> * Collation customization&lt;/a&gt; chapter in icu docs. The &lt;tt&gt;rules&lt;/tt&gt; parameter can either<a name="line.31"></a>
-<span class="sourceLineNo">032</span> * embed the rules definition in the settings or refer to an external location<a name="line.32"></a>
-<span class="sourceLineNo">033</span> * (preferable located under the &lt;tt&gt;config&lt;/tt&gt; location, relative to it).<a name="line.33"></a>
-<span class="sourceLineNo">034</span> */<a name="line.34"></a>
-<span class="sourceLineNo">035</span>public class IcuCollationAnalyzerProvider extends AbstractIndexAnalyzerProvider&lt;ICUCollationKeyAnalyzer&gt; {<a name="line.35"></a>
-<span class="sourceLineNo">036</span><a name="line.36"></a>
-<span class="sourceLineNo">037</span>    private final ICUCollationKeyAnalyzer analyzer;<a name="line.37"></a>
-<span class="sourceLineNo">038</span><a name="line.38"></a>
-<span class="sourceLineNo">039</span>    @Inject<a name="line.39"></a>
-<span class="sourceLineNo">040</span>    public IcuCollationAnalyzerProvider(Index index,<a name="line.40"></a>
-<span class="sourceLineNo">041</span>                                        @IndexSettings Settings indexSettings,<a name="line.41"></a>
-<span class="sourceLineNo">042</span>                                        Environment environment,<a name="line.42"></a>
-<span class="sourceLineNo">043</span>                                        @Assisted String name,<a name="line.43"></a>
-<span class="sourceLineNo">044</span>                                        @Assisted Settings settings) {<a name="line.44"></a>
-<span class="sourceLineNo">045</span>        super(index, indexSettings, name, settings);<a name="line.45"></a>
-<span class="sourceLineNo">046</span><a name="line.46"></a>
-<span class="sourceLineNo">047</span>        Collator collator;<a name="line.47"></a>
-<span class="sourceLineNo">048</span>        String rules = settings.get("rules");<a name="line.48"></a>
-<span class="sourceLineNo">049</span>        if (rules != null) {<a name="line.49"></a>
-<span class="sourceLineNo">050</span>            FailedToResolveConfigException failureToResolve = null;<a name="line.50"></a>
-<span class="sourceLineNo">051</span>            try {<a name="line.51"></a>
-<span class="sourceLineNo">052</span>                rules = environment.resolveConfigAndLoadToString(rules);<a name="line.52"></a>
-<span class="sourceLineNo">053</span>            } catch (FailedToResolveConfigException e) {<a name="line.53"></a>
-<span class="sourceLineNo">054</span>                failureToResolve = e;<a name="line.54"></a>
-<span class="sourceLineNo">055</span>            } catch (IOException e) {<a name="line.55"></a>
-<span class="sourceLineNo">056</span>                throw new ElasticsearchIllegalArgumentException("Failed to load collation rules", e);<a name="line.56"></a>
-<span class="sourceLineNo">057</span>            }<a name="line.57"></a>
-<span class="sourceLineNo">058</span>            try {<a name="line.58"></a>
-<span class="sourceLineNo">059</span>                collator = new RuleBasedCollator(rules);<a name="line.59"></a>
-<span class="sourceLineNo">060</span>            } catch (Exception e) {<a name="line.60"></a>
-<span class="sourceLineNo">061</span>                if (failureToResolve != null) {<a name="line.61"></a>
-<span class="sourceLineNo">062</span>                    throw new ElasticsearchIllegalArgumentException("Failed to resolve collation rules location", failureToResolve);<a name="line.62"></a>
-<span class="sourceLineNo">063</span>                } else {<a name="line.63"></a>
-<span class="sourceLineNo">064</span>                    throw new ElasticsearchIllegalArgumentException("Failed to parse collation rules", e);<a name="line.64"></a>
-<span class="sourceLineNo">065</span>                }<a name="line.65"></a>
-<span class="sourceLineNo">066</span>            }<a name="line.66"></a>
-<span class="sourceLineNo">067</span>        } else {<a name="line.67"></a>
-<span class="sourceLineNo">068</span>            String language = settings.get("language");<a name="line.68"></a>
-<span class="sourceLineNo">069</span>            if (language != null) {<a name="line.69"></a>
-<span class="sourceLineNo">070</span>                ULocale locale;<a name="line.70"></a>
-<span class="sourceLineNo">071</span>                String country = settings.get("country");<a name="line.71"></a>
-<span class="sourceLineNo">072</span>                if (country != null) {<a name="line.72"></a>
-<span class="sourceLineNo">073</span>                    String variant = settings.get("variant");<a name="line.73"></a>
-<span class="sourceLineNo">074</span>                    if (variant != null) {<a name="line.74"></a>
-<span class="sourceLineNo">075</span>                        locale = new ULocale(language, country, variant);<a name="line.75"></a>
-<span class="sourceLineNo">076</span>                    } else {<a name="line.76"></a>
-<span class="sourceLineNo">077</span>                        locale = new ULocale(language, country);<a name="line.77"></a>
-<span class="sourceLineNo">078</span>                    }<a name="line.78"></a>
-<span class="sourceLineNo">079</span>                } else {<a name="line.79"></a>
-<span class="sourceLineNo">080</span>                    locale = new ULocale(language);<a name="line.80"></a>
-<span class="sourceLineNo">081</span>                }<a name="line.81"></a>
-<span class="sourceLineNo">082</span>                collator = Collator.getInstance(locale);<a name="line.82"></a>
-<span class="sourceLineNo">083</span>            } else {<a name="line.83"></a>
-<span class="sourceLineNo">084</span>                collator = Collator.getInstance();<a name="line.84"></a>
-<span class="sourceLineNo">085</span>            }<a name="line.85"></a>
-<span class="sourceLineNo">086</span>        }<a name="line.86"></a>
-<span class="sourceLineNo">087</span><a name="line.87"></a>
-<span class="sourceLineNo">088</span>        // set the strength flag, otherwise it will be the default.<a name="line.88"></a>
-<span class="sourceLineNo">089</span>        String strength = settings.get("strength");<a name="line.89"></a>
-<span class="sourceLineNo">090</span>        if (strength != null) {<a name="line.90"></a>
-<span class="sourceLineNo">091</span>            if (strength.equalsIgnoreCase("primary")) {<a name="line.91"></a>
-<span class="sourceLineNo">092</span>                collator.setStrength(Collator.PRIMARY);<a name="line.92"></a>
-<span class="sourceLineNo">093</span>            } else if (strength.equalsIgnoreCase("secondary")) {<a name="line.93"></a>
-<span class="sourceLineNo">094</span>                collator.setStrength(Collator.SECONDARY);<a name="line.94"></a>
-<span class="sourceLineNo">095</span>            } else if (strength.equalsIgnoreCase("tertiary")) {<a name="line.95"></a>
-<span class="sourceLineNo">096</span>                collator.setStrength(Collator.TERTIARY);<a name="line.96"></a>
-<span class="sourceLineNo">097</span>            } else if (strength.equalsIgnoreCase("quaternary")) {<a name="line.97"></a>
-<span class="sourceLineNo">098</span>                collator.setStrength(Collator.QUATERNARY);<a name="line.98"></a>
-<span class="sourceLineNo">099</span>            } else if (strength.equalsIgnoreCase("identical")) {<a name="line.99"></a>
-<span class="sourceLineNo">100</span>                collator.setStrength(Collator.IDENTICAL);<a name="line.100"></a>
-<span class="sourceLineNo">101</span>            } else {<a name="line.101"></a>
-<span class="sourceLineNo">102</span>                throw new ElasticsearchIllegalArgumentException("Invalid strength: " + strength);<a name="line.102"></a>
-<span class="sourceLineNo">103</span>            }<a name="line.103"></a>
-<span class="sourceLineNo">104</span>        }<a name="line.104"></a>
-<span class="sourceLineNo">105</span><a name="line.105"></a>
-<span class="sourceLineNo">106</span>        // set the decomposition flag, otherwise it will be the default.<a name="line.106"></a>
-<span class="sourceLineNo">107</span>        String decomposition = settings.get("decomposition");<a name="line.107"></a>
-<span class="sourceLineNo">108</span>        if (decomposition != null) {<a name="line.108"></a>
-<span class="sourceLineNo">109</span>            if (decomposition.equalsIgnoreCase("no")) {<a name="line.109"></a>
-<span class="sourceLineNo">110</span>                collator.setDecomposition(Collator.NO_DECOMPOSITION);<a name="line.110"></a>
-<span class="sourceLineNo">111</span>            } else if (decomposition.equalsIgnoreCase("canonical")) {<a name="line.111"></a>
-<span class="sourceLineNo">112</span>                collator.setDecomposition(Collator.CANONICAL_DECOMPOSITION);<a name="line.112"></a>
-<span class="sourceLineNo">113</span>            } else {<a name="line.113"></a>
-<span class="sourceLineNo">114</span>                throw new ElasticsearchIllegalArgumentException("Invalid decomposition: " + decomposition);<a name="line.114"></a>
-<span class="sourceLineNo">115</span>            }<a name="line.115"></a>
-<span class="sourceLineNo">116</span>        }<a name="line.116"></a>
-<span class="sourceLineNo">117</span><a name="line.117"></a>
-<span class="sourceLineNo">118</span>        // expert options: concrete subclasses are always a RuleBasedCollator<a name="line.118"></a>
-<span class="sourceLineNo">119</span>        RuleBasedCollator rbc = (RuleBasedCollator) collator;<a name="line.119"></a>
-<span class="sourceLineNo">120</span>        String alternate = settings.get("alternate");<a name="line.120"></a>
-<span class="sourceLineNo">121</span>        if (alternate != null) {<a name="line.121"></a>
-<span class="sourceLineNo">122</span>            if (alternate.equalsIgnoreCase("shifted")) {<a name="line.122"></a>
-<span class="sourceLineNo">123</span>                rbc.setAlternateHandlingShifted(true);<a name="line.123"></a>
-<span class="sourceLineNo">124</span>            } else if (alternate.equalsIgnoreCase("non-ignorable")) {<a name="line.124"></a>
-<span class="sourceLineNo">125</span>                rbc.setAlternateHandlingShifted(false);<a name="line.125"></a>
-<span class="sourceLineNo">126</span>            } else {<a name="line.126"></a>
-<span class="sourceLineNo">127</span>                throw new ElasticsearchIllegalArgumentException("Invalid alternate: " + alternate);<a name="line.127"></a>
-<span class="sourceLineNo">128</span>            }<a name="line.128"></a>
-<span class="sourceLineNo">129</span>        }<a name="line.129"></a>
-<span class="sourceLineNo">130</span><a name="line.130"></a>
-<span class="sourceLineNo">131</span>        Boolean caseLevel = settings.getAsBoolean("caseLevel", null);<a name="line.131"></a>
-<span class="sourceLineNo">132</span>        if (caseLevel != null) {<a name="line.132"></a>
-<span class="sourceLineNo">133</span>            rbc.setCaseLevel(caseLevel);<a name="line.133"></a>
-<span class="sourceLineNo">134</span>        }<a name="line.134"></a>
-<span class="sourceLineNo">135</span><a name="line.135"></a>
-<span class="sourceLineNo">136</span>        String caseFirst = settings.get("caseFirst");<a name="line.136"></a>
-<span class="sourceLineNo">137</span>        if (caseFirst != null) {<a name="line.137"></a>
-<span class="sourceLineNo">138</span>            if (caseFirst.equalsIgnoreCase("lower")) {<a name="line.138"></a>
-<span class="sourceLineNo">139</span>                rbc.setLowerCaseFirst(true);<a name="line.139"></a>
-<span class="sourceLineNo">140</span>            } else if (caseFirst.equalsIgnoreCase("upper")) {<a name="line.140"></a>
-<span class="sourceLineNo">141</span>                rbc.setUpperCaseFirst(true);<a name="line.141"></a>
-<span class="sourceLineNo">142</span>            } else {<a name="line.142"></a>
-<span class="sourceLineNo">143</span>                throw new ElasticsearchIllegalArgumentException("Invalid caseFirst: " + caseFirst);<a name="line.143"></a>
-<span class="sourceLineNo">144</span>            }<a name="line.144"></a>
-<span class="sourceLineNo">145</span>        }<a name="line.145"></a>
-<span class="sourceLineNo">146</span><a name="line.146"></a>
-<span class="sourceLineNo">147</span>        Boolean numeric = settings.getAsBoolean("numeric", null);<a name="line.147"></a>
-<span class="sourceLineNo">148</span>        if (numeric != null) {<a name="line.148"></a>
-<span class="sourceLineNo">149</span>            rbc.setNumericCollation(numeric);<a name="line.149"></a>
-<span class="sourceLineNo">150</span>        }<a name="line.150"></a>
-<span class="sourceLineNo">151</span><a name="line.151"></a>
-<span class="sourceLineNo">152</span>        String variableTop = settings.get("variableTop");<a name="line.152"></a>
-<span class="sourceLineNo">153</span>        if (variableTop != null) {<a name="line.153"></a>
-<span class="sourceLineNo">154</span>            rbc.setVariableTop(variableTop);<a name="line.154"></a>
-<span class="sourceLineNo">155</span>        }<a name="line.155"></a>
-<span class="sourceLineNo">156</span><a name="line.156"></a>
-<span class="sourceLineNo">157</span>        Boolean hiraganaQuaternaryMode = settings.getAsBoolean("hiraganaQuaternaryMode", null);<a name="line.157"></a>
-<span class="sourceLineNo">158</span>        if (hiraganaQuaternaryMode != null) {<a name="line.158"></a>
-<span class="sourceLineNo">159</span>            rbc.setHiraganaQuaternary(hiraganaQuaternaryMode);<a name="line.159"></a>
-<span class="sourceLineNo">160</span>        }<a name="line.160"></a>
-<span class="sourceLineNo">161</span><a name="line.161"></a>
-<span class="sourceLineNo">162</span>        this.analyzer = new ICUCollationKeyAnalyzer(version, collator);<a name="line.162"></a>
-<span class="sourceLineNo">163</span>    }<a name="line.163"></a>
-<span class="sourceLineNo">164</span><a name="line.164"></a>
-<span class="sourceLineNo">165</span>    @Override<a name="line.165"></a>
-<span class="sourceLineNo">166</span>    public ICUCollationKeyAnalyzer get() {<a name="line.166"></a>
-<span class="sourceLineNo">167</span>        return analyzer;<a name="line.167"></a>
-<span class="sourceLineNo">168</span>    }<a name="line.168"></a>
-<span class="sourceLineNo">169</span>}<a name="line.169"></a>
+<pre><span class="sourceLineNo">001</span>package org.xbib.elasticsearch.index.analysis.icu;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>import com.ibm.icu.text.Collator;<a name="line.3"></a>
+<span class="sourceLineNo">004</span>import com.ibm.icu.text.RuleBasedCollator;<a name="line.4"></a>
+<span class="sourceLineNo">005</span>import com.ibm.icu.util.ULocale;<a name="line.5"></a>
+<span class="sourceLineNo">006</span>import org.apache.lucene.collation.ICUCollationKeyAnalyzer;<a name="line.6"></a>
+<span class="sourceLineNo">007</span>import org.elasticsearch.ElasticsearchIllegalArgumentException;<a name="line.7"></a>
+<span class="sourceLineNo">008</span>import org.elasticsearch.common.inject.Inject;<a name="line.8"></a>
+<span class="sourceLineNo">009</span>import org.elasticsearch.common.inject.assistedinject.Assisted;<a name="line.9"></a>
+<span class="sourceLineNo">010</span>import org.elasticsearch.common.settings.Settings;<a name="line.10"></a>
+<span class="sourceLineNo">011</span>import org.elasticsearch.env.Environment;<a name="line.11"></a>
+<span class="sourceLineNo">012</span>import org.elasticsearch.env.FailedToResolveConfigException;<a name="line.12"></a>
+<span class="sourceLineNo">013</span>import org.elasticsearch.index.Index;<a name="line.13"></a>
+<span class="sourceLineNo">014</span>import org.elasticsearch.index.analysis.AbstractIndexAnalyzerProvider;<a name="line.14"></a>
+<span class="sourceLineNo">015</span>import org.elasticsearch.index.settings.IndexSettings;<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span>import java.io.IOException;<a name="line.17"></a>
+<span class="sourceLineNo">018</span><a name="line.18"></a>
+<span class="sourceLineNo">019</span>/**<a name="line.19"></a>
+<span class="sourceLineNo">020</span> * An ICU collation analyzer provider.<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * &lt;p/&gt;<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * There are two ways to configure collation:<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * &lt;p/&gt;<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * &lt;p&gt;The first is simply specifying the locale (defaults to the default locale).<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * The &lt;tt&gt;language&lt;/tt&gt; parameter is the lowercase two-letter ISO-639 code.<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * An additional &lt;tt&gt;country&lt;/tt&gt; and &lt;tt&gt;variant&lt;/tt&gt; can be provided.<a name="line.26"></a>
+<span class="sourceLineNo">027</span> * &lt;p/&gt;<a name="line.27"></a>
+<span class="sourceLineNo">028</span> * &lt;p&gt;The second option is to specify collation rules as defined in the<a name="line.28"></a>
+<span class="sourceLineNo">029</span> * &lt;a href="http://www.icu-project.org/userguide/Collate_Customization.html"&gt;<a name="line.29"></a>
+<span class="sourceLineNo">030</span> * Collation customization&lt;/a&gt; chapter in icu docs. The &lt;tt&gt;rules&lt;/tt&gt; parameter can either<a name="line.30"></a>
+<span class="sourceLineNo">031</span> * embed the rules definition in the settings or refer to an external location<a name="line.31"></a>
+<span class="sourceLineNo">032</span> * (preferable located under the &lt;tt&gt;config&lt;/tt&gt; location, relative to it).<a name="line.32"></a>
+<span class="sourceLineNo">033</span> */<a name="line.33"></a>
+<span class="sourceLineNo">034</span>public class IcuCollationAnalyzerProvider extends AbstractIndexAnalyzerProvider&lt;ICUCollationKeyAnalyzer&gt; {<a name="line.34"></a>
+<span class="sourceLineNo">035</span><a name="line.35"></a>
+<span class="sourceLineNo">036</span>    private final Collator collator;<a name="line.36"></a>
+<span class="sourceLineNo">037</span><a name="line.37"></a>
+<span class="sourceLineNo">038</span>    @Inject<a name="line.38"></a>
+<span class="sourceLineNo">039</span>    public IcuCollationAnalyzerProvider(Index index,<a name="line.39"></a>
+<span class="sourceLineNo">040</span>                                        @IndexSettings Settings indexSettings,<a name="line.40"></a>
+<span class="sourceLineNo">041</span>                                        Environment environment,<a name="line.41"></a>
+<span class="sourceLineNo">042</span>                                        @Assisted String name,<a name="line.42"></a>
+<span class="sourceLineNo">043</span>                                        @Assisted Settings settings) {<a name="line.43"></a>
+<span class="sourceLineNo">044</span>        super(index, indexSettings, name, settings);<a name="line.44"></a>
+<span class="sourceLineNo">045</span><a name="line.45"></a>
+<span class="sourceLineNo">046</span>        String rules = settings.get("rules");<a name="line.46"></a>
+<span class="sourceLineNo">047</span>        if (rules != null) {<a name="line.47"></a>
+<span class="sourceLineNo">048</span>            FailedToResolveConfigException failureToResolve = null;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>            try {<a name="line.49"></a>
+<span class="sourceLineNo">050</span>                rules = environment.resolveConfigAndLoadToString(rules);<a name="line.50"></a>
+<span class="sourceLineNo">051</span>            } catch (FailedToResolveConfigException e) {<a name="line.51"></a>
+<span class="sourceLineNo">052</span>                failureToResolve = e;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>            } catch (IOException e) {<a name="line.53"></a>
+<span class="sourceLineNo">054</span>                throw new ElasticsearchIllegalArgumentException("Failed to load collation rules", e);<a name="line.54"></a>
+<span class="sourceLineNo">055</span>            }<a name="line.55"></a>
+<span class="sourceLineNo">056</span>            try {<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                collator = new RuleBasedCollator(rules);<a name="line.57"></a>
+<span class="sourceLineNo">058</span>            } catch (Exception e) {<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                if (failureToResolve != null) {<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                    throw new ElasticsearchIllegalArgumentException("Failed to resolve collation rules location", failureToResolve);<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                } else {<a name="line.61"></a>
+<span class="sourceLineNo">062</span>                    throw new ElasticsearchIllegalArgumentException("Failed to parse collation rules", e);<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                }<a name="line.63"></a>
+<span class="sourceLineNo">064</span>            }<a name="line.64"></a>
+<span class="sourceLineNo">065</span>        } else {<a name="line.65"></a>
+<span class="sourceLineNo">066</span>            String language = settings.get("language");<a name="line.66"></a>
+<span class="sourceLineNo">067</span>            if (language != null) {<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                ULocale locale;<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                String country = settings.get("country");<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                if (country != null) {<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                    String variant = settings.get("variant");<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                    if (variant != null) {<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                        locale = new ULocale(language, country, variant);<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                    } else {<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                        locale = new ULocale(language, country);<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                    }<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                } else {<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                    locale = new ULocale(language);<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                }<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                collator = Collator.getInstance(locale);<a name="line.80"></a>
+<span class="sourceLineNo">081</span>            } else {<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                collator = Collator.getInstance();<a name="line.82"></a>
+<span class="sourceLineNo">083</span>            }<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        }<a name="line.84"></a>
+<span class="sourceLineNo">085</span><a name="line.85"></a>
+<span class="sourceLineNo">086</span>        // set the strength flag, otherwise it will be the default.<a name="line.86"></a>
+<span class="sourceLineNo">087</span>        String strength = settings.get("strength");<a name="line.87"></a>
+<span class="sourceLineNo">088</span>        if (strength != null) {<a name="line.88"></a>
+<span class="sourceLineNo">089</span>            if (strength.equalsIgnoreCase("primary")) {<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                collator.setStrength(Collator.PRIMARY);<a name="line.90"></a>
+<span class="sourceLineNo">091</span>            } else if (strength.equalsIgnoreCase("secondary")) {<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                collator.setStrength(Collator.SECONDARY);<a name="line.92"></a>
+<span class="sourceLineNo">093</span>            } else if (strength.equalsIgnoreCase("tertiary")) {<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                collator.setStrength(Collator.TERTIARY);<a name="line.94"></a>
+<span class="sourceLineNo">095</span>            } else if (strength.equalsIgnoreCase("quaternary")) {<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                collator.setStrength(Collator.QUATERNARY);<a name="line.96"></a>
+<span class="sourceLineNo">097</span>            } else if (strength.equalsIgnoreCase("identical")) {<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                collator.setStrength(Collator.IDENTICAL);<a name="line.98"></a>
+<span class="sourceLineNo">099</span>            } else {<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                throw new ElasticsearchIllegalArgumentException("Invalid strength: " + strength);<a name="line.100"></a>
+<span class="sourceLineNo">101</span>            }<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        }<a name="line.102"></a>
+<span class="sourceLineNo">103</span><a name="line.103"></a>
+<span class="sourceLineNo">104</span>        // set the decomposition flag, otherwise it will be the default.<a name="line.104"></a>
+<span class="sourceLineNo">105</span>        String decomposition = settings.get("decomposition");<a name="line.105"></a>
+<span class="sourceLineNo">106</span>        if (decomposition != null) {<a name="line.106"></a>
+<span class="sourceLineNo">107</span>            if (decomposition.equalsIgnoreCase("no")) {<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                collator.setDecomposition(Collator.NO_DECOMPOSITION);<a name="line.108"></a>
+<span class="sourceLineNo">109</span>            } else if (decomposition.equalsIgnoreCase("canonical")) {<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                collator.setDecomposition(Collator.CANONICAL_DECOMPOSITION);<a name="line.110"></a>
+<span class="sourceLineNo">111</span>            } else {<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                throw new ElasticsearchIllegalArgumentException("Invalid decomposition: " + decomposition);<a name="line.112"></a>
+<span class="sourceLineNo">113</span>            }<a name="line.113"></a>
+<span class="sourceLineNo">114</span>        }<a name="line.114"></a>
+<span class="sourceLineNo">115</span><a name="line.115"></a>
+<span class="sourceLineNo">116</span>        // expert options: concrete subclasses are always a RuleBasedCollator<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        RuleBasedCollator rbc = (RuleBasedCollator) collator;<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        String alternate = settings.get("alternate");<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        if (alternate != null) {<a name="line.119"></a>
+<span class="sourceLineNo">120</span>            if (alternate.equalsIgnoreCase("shifted")) {<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                rbc.setAlternateHandlingShifted(true);<a name="line.121"></a>
+<span class="sourceLineNo">122</span>            } else if (alternate.equalsIgnoreCase("non-ignorable")) {<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                rbc.setAlternateHandlingShifted(false);<a name="line.123"></a>
+<span class="sourceLineNo">124</span>            } else {<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                throw new ElasticsearchIllegalArgumentException("Invalid alternate: " + alternate);<a name="line.125"></a>
+<span class="sourceLineNo">126</span>            }<a name="line.126"></a>
+<span class="sourceLineNo">127</span>        }<a name="line.127"></a>
+<span class="sourceLineNo">128</span><a name="line.128"></a>
+<span class="sourceLineNo">129</span>        Boolean caseLevel = settings.getAsBoolean("caseLevel", null);<a name="line.129"></a>
+<span class="sourceLineNo">130</span>        if (caseLevel != null) {<a name="line.130"></a>
+<span class="sourceLineNo">131</span>            rbc.setCaseLevel(caseLevel);<a name="line.131"></a>
+<span class="sourceLineNo">132</span>        }<a name="line.132"></a>
+<span class="sourceLineNo">133</span><a name="line.133"></a>
+<span class="sourceLineNo">134</span>        String caseFirst = settings.get("caseFirst");<a name="line.134"></a>
+<span class="sourceLineNo">135</span>        if (caseFirst != null) {<a name="line.135"></a>
+<span class="sourceLineNo">136</span>            if (caseFirst.equalsIgnoreCase("lower")) {<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                rbc.setLowerCaseFirst(true);<a name="line.137"></a>
+<span class="sourceLineNo">138</span>            } else if (caseFirst.equalsIgnoreCase("upper")) {<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                rbc.setUpperCaseFirst(true);<a name="line.139"></a>
+<span class="sourceLineNo">140</span>            } else {<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                throw new ElasticsearchIllegalArgumentException("Invalid caseFirst: " + caseFirst);<a name="line.141"></a>
+<span class="sourceLineNo">142</span>            }<a name="line.142"></a>
+<span class="sourceLineNo">143</span>        }<a name="line.143"></a>
+<span class="sourceLineNo">144</span><a name="line.144"></a>
+<span class="sourceLineNo">145</span>        Boolean numeric = settings.getAsBoolean("numeric", null);<a name="line.145"></a>
+<span class="sourceLineNo">146</span>        if (numeric != null) {<a name="line.146"></a>
+<span class="sourceLineNo">147</span>            rbc.setNumericCollation(numeric);<a name="line.147"></a>
+<span class="sourceLineNo">148</span>        }<a name="line.148"></a>
+<span class="sourceLineNo">149</span><a name="line.149"></a>
+<span class="sourceLineNo">150</span>        int maxVariable = settings.getAsInt("variableTop", Collator.ReorderCodes.DEFAULT);<a name="line.150"></a>
+<span class="sourceLineNo">151</span>        rbc.setMaxVariable(maxVariable);<a name="line.151"></a>
+<span class="sourceLineNo">152</span>    }<a name="line.152"></a>
+<span class="sourceLineNo">153</span><a name="line.153"></a>
+<span class="sourceLineNo">154</span>    @Override<a name="line.154"></a>
+<span class="sourceLineNo">155</span>    public ICUCollationKeyAnalyzer get() {<a name="line.155"></a>
+<span class="sourceLineNo">156</span>        return new ICUCollationKeyAnalyzer(version, collator);<a name="line.156"></a>
+<span class="sourceLineNo">157</span>    }<a name="line.157"></a>
+<span class="sourceLineNo">158</span>}<a name="line.158"></a>
 
 
 

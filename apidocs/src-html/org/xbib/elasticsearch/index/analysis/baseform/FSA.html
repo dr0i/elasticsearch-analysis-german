@@ -30,28 +30,28 @@
 <span class="sourceLineNo">022</span>public abstract class FSA implements Iterable&lt;ByteBuffer&gt; {<a name="line.22"></a>
 <span class="sourceLineNo">023</span>    /**<a name="line.23"></a>
 <span class="sourceLineNo">024</span>     * @return Returns the identifier of the root node of this automaton.<a name="line.24"></a>
-<span class="sourceLineNo">025</span>     *         Returns 0 if the start node is also the end node (the automaton<a name="line.25"></a>
-<span class="sourceLineNo">026</span>     *         is empty).<a name="line.26"></a>
+<span class="sourceLineNo">025</span>     * Returns 0 if the start node is also the end node (the automaton<a name="line.25"></a>
+<span class="sourceLineNo">026</span>     * is empty).<a name="line.26"></a>
 <span class="sourceLineNo">027</span>     */<a name="line.27"></a>
 <span class="sourceLineNo">028</span>    public abstract int getRootNode();<a name="line.28"></a>
 <span class="sourceLineNo">029</span><a name="line.29"></a>
 <span class="sourceLineNo">030</span>    /**<a name="line.30"></a>
 <span class="sourceLineNo">031</span>     * @return Returns the identifier of the first arc leaving &lt;code&gt;node&lt;/code&gt;<a name="line.31"></a>
-<span class="sourceLineNo">032</span>     *         or 0 if the node has no outgoing arcs.<a name="line.32"></a>
+<span class="sourceLineNo">032</span>     * or 0 if the node has no outgoing arcs.<a name="line.32"></a>
 <span class="sourceLineNo">033</span>     */<a name="line.33"></a>
 <span class="sourceLineNo">034</span>    public abstract int getFirstArc(int node);<a name="line.34"></a>
 <span class="sourceLineNo">035</span><a name="line.35"></a>
 <span class="sourceLineNo">036</span>    /**<a name="line.36"></a>
 <span class="sourceLineNo">037</span>     * @return Returns the identifier of the next arc after &lt;code&gt;arc&lt;/code&gt; and<a name="line.37"></a>
-<span class="sourceLineNo">038</span>     *         leaving &lt;code&gt;node&lt;/code&gt;. Zero is returned if no more arcs are<a name="line.38"></a>
-<span class="sourceLineNo">039</span>     *         available for the node.<a name="line.39"></a>
+<span class="sourceLineNo">038</span>     * leaving &lt;code&gt;node&lt;/code&gt;. Zero is returned if no more arcs are<a name="line.38"></a>
+<span class="sourceLineNo">039</span>     * available for the node.<a name="line.39"></a>
 <span class="sourceLineNo">040</span>     */<a name="line.40"></a>
 <span class="sourceLineNo">041</span>    public abstract int getNextArc(int arc);<a name="line.41"></a>
 <span class="sourceLineNo">042</span><a name="line.42"></a>
 <span class="sourceLineNo">043</span>    /**<a name="line.43"></a>
 <span class="sourceLineNo">044</span>     * @return Returns the identifier of an arc leaving &lt;code&gt;node&lt;/code&gt; and<a name="line.44"></a>
-<span class="sourceLineNo">045</span>     *         labeled with &lt;code&gt;label&lt;/code&gt;. An identifier equal to 0 means<a name="line.45"></a>
-<span class="sourceLineNo">046</span>     *         the node has no outgoing arc labeled &lt;code&gt;label&lt;/code&gt;.<a name="line.46"></a>
+<span class="sourceLineNo">045</span>     * labeled with &lt;code&gt;label&lt;/code&gt;. An identifier equal to 0 means<a name="line.45"></a>
+<span class="sourceLineNo">046</span>     * the node has no outgoing arc labeled &lt;code&gt;label&lt;/code&gt;.<a name="line.46"></a>
 <span class="sourceLineNo">047</span>     */<a name="line.47"></a>
 <span class="sourceLineNo">048</span>    public abstract int getArc(int node, byte label);<a name="line.48"></a>
 <span class="sourceLineNo">049</span><a name="line.49"></a>
@@ -88,8 +88,8 @@
 <span class="sourceLineNo">080</span><a name="line.80"></a>
 <span class="sourceLineNo">081</span>    /**<a name="line.81"></a>
 <span class="sourceLineNo">082</span>     * @return Returns the number of sequences reachable from the given state if<a name="line.82"></a>
-<span class="sourceLineNo">083</span>     *         the automaton was compiled with {@link FSAFlags#NUMBERS}. The size of<a name="line.83"></a>
-<span class="sourceLineNo">084</span>     *         the right language of the state, in other words.<a name="line.84"></a>
+<span class="sourceLineNo">083</span>     * the automaton was compiled with {@link FSAFlags#NUMBERS}. The size of<a name="line.83"></a>
+<span class="sourceLineNo">084</span>     * the right language of the state, in other words.<a name="line.84"></a>
 <span class="sourceLineNo">085</span>     * @throws UnsupportedOperationException If the automaton was not compiled with<a name="line.85"></a>
 <span class="sourceLineNo">086</span>     *                                       {@link FSAFlags#NUMBERS}. The value can then be computed by manual count<a name="line.86"></a>
 <span class="sourceLineNo">087</span>     *                                       of {@link #getSequences(int)}.<a name="line.87"></a>

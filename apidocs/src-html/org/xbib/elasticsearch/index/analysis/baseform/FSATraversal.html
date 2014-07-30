@@ -38,9 +38,9 @@
 <span class="sourceLineNo">030</span>     * @param start  Start index in the sequence array.<a name="line.30"></a>
 <span class="sourceLineNo">031</span>     * @param length Length of the byte sequence, must be at least 1.<a name="line.31"></a>
 <span class="sourceLineNo">032</span>     * @return Returns a unique integer assigned to the input sequence in the automaton (reflecting<a name="line.32"></a>
-<span class="sourceLineNo">033</span>     *         the number of that sequence in the input used to build the automaton). Returns a negative<a name="line.33"></a>
-<span class="sourceLineNo">034</span>     *         integer if the input sequence was not part of the input from which the automaton was created.<a name="line.34"></a>
-<span class="sourceLineNo">035</span>     *         The type of mismatch is a constant defined in {@link MatchResult}.<a name="line.35"></a>
+<span class="sourceLineNo">033</span>     * the number of that sequence in the input used to build the automaton). Returns a negative<a name="line.33"></a>
+<span class="sourceLineNo">034</span>     * integer if the input sequence was not part of the input from which the automaton was created.<a name="line.34"></a>
+<span class="sourceLineNo">035</span>     * The type of mismatch is a constant defined in {@link MatchResult}.<a name="line.35"></a>
 <span class="sourceLineNo">036</span>     */<a name="line.36"></a>
 <span class="sourceLineNo">037</span>    public int perfectHash(byte[] sequence, int start, int length, int node) {<a name="line.37"></a>
 <span class="sourceLineNo">038</span>        assert fsa.getFlags().contains(FSAFlags.NUMBERS) : "FSA not built with NUMBERS option.";<a name="line.38"></a>
@@ -105,7 +105,7 @@
 <span class="sourceLineNo">097</span>     * produced.<a name="line.97"></a>
 <span class="sourceLineNo">098</span>     *<a name="line.98"></a>
 <span class="sourceLineNo">099</span>     * @return The same object as &lt;code&gt;result&lt;/code&gt;, but with reset internal<a name="line.99"></a>
-<span class="sourceLineNo">100</span>     *         type and other fields.<a name="line.100"></a>
+<span class="sourceLineNo">100</span>     * type and other fields.<a name="line.100"></a>
 <span class="sourceLineNo">101</span>     */<a name="line.101"></a>
 <span class="sourceLineNo">102</span>    public MatchResult match(MatchResult result,<a name="line.102"></a>
 <span class="sourceLineNo">103</span>                             byte[] sequence, int start, int length, int node) {<a name="line.103"></a>
@@ -119,7 +119,7 @@
 <span class="sourceLineNo">111</span>            final int arc = fsa.getArc(node, sequence[i]);<a name="line.111"></a>
 <span class="sourceLineNo">112</span>            if (arc != 0) {<a name="line.112"></a>
 <span class="sourceLineNo">113</span>                if (fsa.isArcFinal(arc) &amp;&amp; i + 1 == end) {<a name="line.113"></a>
-<span class="sourceLineNo">114</span>                                        /* The automaton has an exact match of the input sequence. */<a name="line.114"></a>
+<span class="sourceLineNo">114</span>                    /* The automaton has an exact match of the input sequence. */<a name="line.114"></a>
 <span class="sourceLineNo">115</span>                    result.reset(EXACT_MATCH, i, node);<a name="line.115"></a>
 <span class="sourceLineNo">116</span>                    return result;<a name="line.116"></a>
 <span class="sourceLineNo">117</span>                }<a name="line.117"></a>

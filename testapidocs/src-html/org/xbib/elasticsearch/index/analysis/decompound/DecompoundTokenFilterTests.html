@@ -28,94 +28,91 @@
 <span class="sourceLineNo">020</span>import org.elasticsearch.index.settings.IndexSettingsModule;<a name="line.20"></a>
 <span class="sourceLineNo">021</span>import org.elasticsearch.indices.analysis.IndicesAnalysisModule;<a name="line.21"></a>
 <span class="sourceLineNo">022</span>import org.elasticsearch.indices.analysis.IndicesAnalysisService;<a name="line.22"></a>
-<span class="sourceLineNo">023</span>import org.testng.Assert;<a name="line.23"></a>
-<span class="sourceLineNo">024</span>import org.testng.annotations.Test;<a name="line.24"></a>
+<span class="sourceLineNo">023</span>import org.junit.Assert;<a name="line.23"></a>
+<span class="sourceLineNo">024</span>import org.junit.Test;<a name="line.24"></a>
 <span class="sourceLineNo">025</span>import org.xbib.elasticsearch.plugin.analysis.german.AnalysisGermanPlugin;<a name="line.25"></a>
 <span class="sourceLineNo">026</span><a name="line.26"></a>
 <span class="sourceLineNo">027</span>import java.io.IOException;<a name="line.27"></a>
 <span class="sourceLineNo">028</span>import java.io.StringReader;<a name="line.28"></a>
 <span class="sourceLineNo">029</span><a name="line.29"></a>
-<span class="sourceLineNo">030</span>import static org.hamcrest.MatcherAssert.assertThat;<a name="line.30"></a>
-<span class="sourceLineNo">031</span>import static org.hamcrest.Matchers.instanceOf;<a name="line.31"></a>
-<span class="sourceLineNo">032</span><a name="line.32"></a>
-<span class="sourceLineNo">033</span>public class DecompoundTokenFilterTests {<a name="line.33"></a>
-<span class="sourceLineNo">034</span><a name="line.34"></a>
-<span class="sourceLineNo">035</span>    @Test<a name="line.35"></a>
-<span class="sourceLineNo">036</span>    public void test() throws IOException {<a name="line.36"></a>
-<span class="sourceLineNo">037</span>        AnalysisService analysisService = createAnalysisService();<a name="line.37"></a>
-<span class="sourceLineNo">038</span>        TokenFilterFactory tokenFilter = analysisService.tokenFilter("decomp");<a name="line.38"></a>
-<span class="sourceLineNo">039</span>        assertThat(tokenFilter, instanceOf(DecompoundTokenFilterFactory.class));<a name="line.39"></a>
-<span class="sourceLineNo">040</span><a name="line.40"></a>
-<span class="sourceLineNo">041</span>        String source = "Die Jahresfeier der Rechtsanwaltskanzleien auf dem Donaudampfschiff hat viel ?kosteuer gekostet";<a name="line.41"></a>
-<span class="sourceLineNo">042</span><a name="line.42"></a>
-<span class="sourceLineNo">043</span>        String[] expected = {<a name="line.43"></a>
-<span class="sourceLineNo">044</span>            "Die",<a name="line.44"></a>
-<span class="sourceLineNo">045</span>            "Die",<a name="line.45"></a>
-<span class="sourceLineNo">046</span>            "Jahresfeier",<a name="line.46"></a>
-<span class="sourceLineNo">047</span>            "Jahr",<a name="line.47"></a>
-<span class="sourceLineNo">048</span>            "feier",<a name="line.48"></a>
-<span class="sourceLineNo">049</span>            "der",<a name="line.49"></a>
-<span class="sourceLineNo">050</span>            "der",<a name="line.50"></a>
-<span class="sourceLineNo">051</span>            "Rechtsanwaltskanzleien",<a name="line.51"></a>
-<span class="sourceLineNo">052</span>            "Recht",<a name="line.52"></a>
-<span class="sourceLineNo">053</span>            "anwalt",<a name="line.53"></a>
-<span class="sourceLineNo">054</span>            "kanzlei",<a name="line.54"></a>
-<span class="sourceLineNo">055</span>            "auf",<a name="line.55"></a>
-<span class="sourceLineNo">056</span>            "auf",<a name="line.56"></a>
-<span class="sourceLineNo">057</span>            "dem",<a name="line.57"></a>
-<span class="sourceLineNo">058</span>            "dem",<a name="line.58"></a>
-<span class="sourceLineNo">059</span>            "Donaudampfschiff",<a name="line.59"></a>
-<span class="sourceLineNo">060</span>            "Donau",<a name="line.60"></a>
-<span class="sourceLineNo">061</span>            "dampf",<a name="line.61"></a>
-<span class="sourceLineNo">062</span>            "schiff",<a name="line.62"></a>
-<span class="sourceLineNo">063</span>            "hat",<a name="line.63"></a>
-<span class="sourceLineNo">064</span>            "hat",<a name="line.64"></a>
-<span class="sourceLineNo">065</span>            "viel",<a name="line.65"></a>
-<span class="sourceLineNo">066</span>            "viel",<a name="line.66"></a>
-<span class="sourceLineNo">067</span>            "?kosteuer",<a name="line.67"></a>
-<span class="sourceLineNo">068</span>            "?kosteuer",<a name="line.68"></a>
-<span class="sourceLineNo">069</span>            "gekostet",<a name="line.69"></a>
-<span class="sourceLineNo">070</span>            "gekosten"<a name="line.70"></a>
-<span class="sourceLineNo">071</span>        };<a name="line.71"></a>
-<span class="sourceLineNo">072</span>        Tokenizer tokenizer = new StandardTokenizer(Version.LUCENE_46, new StringReader(source));<a name="line.72"></a>
-<span class="sourceLineNo">073</span>        assertSimpleTSOutput(tokenFilter.create(tokenizer), expected);<a name="line.73"></a>
-<span class="sourceLineNo">074</span>    }<a name="line.74"></a>
-<span class="sourceLineNo">075</span><a name="line.75"></a>
-<span class="sourceLineNo">076</span>    private AnalysisService createAnalysisService() {<a name="line.76"></a>
-<span class="sourceLineNo">077</span>        Settings settings = ImmutableSettings.settingsBuilder().loadFromClasspath("org/xbib/elasticsearch/index/analysis/decompound_analysis.json").build();<a name="line.77"></a>
-<span class="sourceLineNo">078</span><a name="line.78"></a>
-<span class="sourceLineNo">079</span>        Index index = new Index("test");<a name="line.79"></a>
-<span class="sourceLineNo">080</span><a name="line.80"></a>
-<span class="sourceLineNo">081</span>        Injector parentInjector = new ModulesBuilder().add(new SettingsModule(settings),<a name="line.81"></a>
-<span class="sourceLineNo">082</span>                new EnvironmentModule(new Environment(settings)),<a name="line.82"></a>
-<span class="sourceLineNo">083</span>                new IndicesAnalysisModule())<a name="line.83"></a>
-<span class="sourceLineNo">084</span>                .createInjector();<a name="line.84"></a>
-<span class="sourceLineNo">085</span><a name="line.85"></a>
-<span class="sourceLineNo">086</span>        AnalysisModule analysisModule = new AnalysisModule(settings, parentInjector.getInstance(IndicesAnalysisService.class));<a name="line.86"></a>
-<span class="sourceLineNo">087</span>        new AnalysisGermanPlugin().onModule(analysisModule);<a name="line.87"></a>
-<span class="sourceLineNo">088</span><a name="line.88"></a>
-<span class="sourceLineNo">089</span>        Injector injector = new ModulesBuilder().add(<a name="line.89"></a>
-<span class="sourceLineNo">090</span>                new IndexSettingsModule(index, settings),<a name="line.90"></a>
-<span class="sourceLineNo">091</span>                new IndexNameModule(index),<a name="line.91"></a>
-<span class="sourceLineNo">092</span>                analysisModule)<a name="line.92"></a>
-<span class="sourceLineNo">093</span>                .createChildInjector(parentInjector);<a name="line.93"></a>
-<span class="sourceLineNo">094</span><a name="line.94"></a>
-<span class="sourceLineNo">095</span>        return injector.getInstance(AnalysisService.class);<a name="line.95"></a>
-<span class="sourceLineNo">096</span>    }<a name="line.96"></a>
-<span class="sourceLineNo">097</span><a name="line.97"></a>
-<span class="sourceLineNo">098</span>    private void assertSimpleTSOutput(TokenStream stream, String[] expected) throws IOException {<a name="line.98"></a>
-<span class="sourceLineNo">099</span>        stream.reset();<a name="line.99"></a>
-<span class="sourceLineNo">100</span>        CharTermAttribute termAttr = stream.getAttribute(CharTermAttribute.class);<a name="line.100"></a>
-<span class="sourceLineNo">101</span>        Assert.assertNotNull(termAttr);<a name="line.101"></a>
-<span class="sourceLineNo">102</span>        int i = 0;<a name="line.102"></a>
-<span class="sourceLineNo">103</span>        while (stream.incrementToken()) {<a name="line.103"></a>
-<span class="sourceLineNo">104</span>            Assert.assertTrue(i &lt; expected.length);<a name="line.104"></a>
-<span class="sourceLineNo">105</span>            Assert.assertEquals(expected[i++], termAttr.toString(), "expected different term at index " + i);<a name="line.105"></a>
-<span class="sourceLineNo">106</span>        }<a name="line.106"></a>
-<span class="sourceLineNo">107</span>        Assert.assertEquals(i, expected.length, "not all tokens produced");<a name="line.107"></a>
-<span class="sourceLineNo">108</span>        stream.close();<a name="line.108"></a>
-<span class="sourceLineNo">109</span>    }<a name="line.109"></a>
-<span class="sourceLineNo">110</span>}<a name="line.110"></a>
+<span class="sourceLineNo">030</span>public class DecompoundTokenFilterTests extends Assert {<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>    @Test<a name="line.32"></a>
+<span class="sourceLineNo">033</span>    public void test() throws IOException {<a name="line.33"></a>
+<span class="sourceLineNo">034</span>        AnalysisService analysisService = createAnalysisService();<a name="line.34"></a>
+<span class="sourceLineNo">035</span>        TokenFilterFactory tokenFilter = analysisService.tokenFilter("decomp");<a name="line.35"></a>
+<span class="sourceLineNo">036</span><a name="line.36"></a>
+<span class="sourceLineNo">037</span>        String source = "Die Jahresfeier der Rechtsanwaltskanzleien auf dem Donaudampfschiff hat viel Ökosteuer gekostet";<a name="line.37"></a>
+<span class="sourceLineNo">038</span><a name="line.38"></a>
+<span class="sourceLineNo">039</span>        String[] expected = {<a name="line.39"></a>
+<span class="sourceLineNo">040</span>            "Die",<a name="line.40"></a>
+<span class="sourceLineNo">041</span>            "Die",<a name="line.41"></a>
+<span class="sourceLineNo">042</span>            "Jahresfeier",<a name="line.42"></a>
+<span class="sourceLineNo">043</span>            "Jahr",<a name="line.43"></a>
+<span class="sourceLineNo">044</span>            "feier",<a name="line.44"></a>
+<span class="sourceLineNo">045</span>            "der",<a name="line.45"></a>
+<span class="sourceLineNo">046</span>            "der",<a name="line.46"></a>
+<span class="sourceLineNo">047</span>            "Rechtsanwaltskanzleien",<a name="line.47"></a>
+<span class="sourceLineNo">048</span>            "Recht",<a name="line.48"></a>
+<span class="sourceLineNo">049</span>            "anwalt",<a name="line.49"></a>
+<span class="sourceLineNo">050</span>            "kanzlei",<a name="line.50"></a>
+<span class="sourceLineNo">051</span>            "auf",<a name="line.51"></a>
+<span class="sourceLineNo">052</span>            "auf",<a name="line.52"></a>
+<span class="sourceLineNo">053</span>            "dem",<a name="line.53"></a>
+<span class="sourceLineNo">054</span>            "dem",<a name="line.54"></a>
+<span class="sourceLineNo">055</span>            "Donaudampfschiff",<a name="line.55"></a>
+<span class="sourceLineNo">056</span>            "Donau",<a name="line.56"></a>
+<span class="sourceLineNo">057</span>            "dampf",<a name="line.57"></a>
+<span class="sourceLineNo">058</span>            "schiff",<a name="line.58"></a>
+<span class="sourceLineNo">059</span>            "hat",<a name="line.59"></a>
+<span class="sourceLineNo">060</span>            "hat",<a name="line.60"></a>
+<span class="sourceLineNo">061</span>            "viel",<a name="line.61"></a>
+<span class="sourceLineNo">062</span>            "viel",<a name="line.62"></a>
+<span class="sourceLineNo">063</span>            "Ökosteuer",<a name="line.63"></a>
+<span class="sourceLineNo">064</span>            "Ökosteuer",<a name="line.64"></a>
+<span class="sourceLineNo">065</span>            "gekostet",<a name="line.65"></a>
+<span class="sourceLineNo">066</span>            "gekosten"<a name="line.66"></a>
+<span class="sourceLineNo">067</span>        };<a name="line.67"></a>
+<span class="sourceLineNo">068</span>        Tokenizer tokenizer = new StandardTokenizer(Version.LUCENE_4_9, new StringReader(source));<a name="line.68"></a>
+<span class="sourceLineNo">069</span>        assertSimpleTSOutput(tokenFilter.create(tokenizer), expected);<a name="line.69"></a>
+<span class="sourceLineNo">070</span>    }<a name="line.70"></a>
+<span class="sourceLineNo">071</span><a name="line.71"></a>
+<span class="sourceLineNo">072</span>    private AnalysisService createAnalysisService() {<a name="line.72"></a>
+<span class="sourceLineNo">073</span>        Settings settings = ImmutableSettings.settingsBuilder().loadFromClasspath("org/xbib/elasticsearch/index/analysis/decompound_analysis.json").build();<a name="line.73"></a>
+<span class="sourceLineNo">074</span><a name="line.74"></a>
+<span class="sourceLineNo">075</span>        Index index = new Index("test");<a name="line.75"></a>
+<span class="sourceLineNo">076</span><a name="line.76"></a>
+<span class="sourceLineNo">077</span>        Injector parentInjector = new ModulesBuilder().add(new SettingsModule(settings),<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                new EnvironmentModule(new Environment(settings)),<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                new IndicesAnalysisModule())<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                .createInjector();<a name="line.80"></a>
+<span class="sourceLineNo">081</span><a name="line.81"></a>
+<span class="sourceLineNo">082</span>        AnalysisModule analysisModule = new AnalysisModule(settings, parentInjector.getInstance(IndicesAnalysisService.class));<a name="line.82"></a>
+<span class="sourceLineNo">083</span>        new AnalysisGermanPlugin().onModule(analysisModule);<a name="line.83"></a>
+<span class="sourceLineNo">084</span><a name="line.84"></a>
+<span class="sourceLineNo">085</span>        Injector injector = new ModulesBuilder().add(<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                new IndexSettingsModule(index, settings),<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                new IndexNameModule(index),<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                analysisModule)<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                .createChildInjector(parentInjector);<a name="line.89"></a>
+<span class="sourceLineNo">090</span><a name="line.90"></a>
+<span class="sourceLineNo">091</span>        return injector.getInstance(AnalysisService.class);<a name="line.91"></a>
+<span class="sourceLineNo">092</span>    }<a name="line.92"></a>
+<span class="sourceLineNo">093</span><a name="line.93"></a>
+<span class="sourceLineNo">094</span>    private void assertSimpleTSOutput(TokenStream stream, String[] expected) throws IOException {<a name="line.94"></a>
+<span class="sourceLineNo">095</span>        stream.reset();<a name="line.95"></a>
+<span class="sourceLineNo">096</span>        CharTermAttribute termAttr = stream.getAttribute(CharTermAttribute.class);<a name="line.96"></a>
+<span class="sourceLineNo">097</span>        Assert.assertNotNull(termAttr);<a name="line.97"></a>
+<span class="sourceLineNo">098</span>        int i = 0;<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        while (stream.incrementToken()) {<a name="line.99"></a>
+<span class="sourceLineNo">100</span>            assertTrue(i &lt; expected.length);<a name="line.100"></a>
+<span class="sourceLineNo">101</span>            assertEquals(expected[i], termAttr.toString());<a name="line.101"></a>
+<span class="sourceLineNo">102</span>            i++;<a name="line.102"></a>
+<span class="sourceLineNo">103</span>        }<a name="line.103"></a>
+<span class="sourceLineNo">104</span>        assertEquals(i, expected.length);<a name="line.104"></a>
+<span class="sourceLineNo">105</span>        stream.close();<a name="line.105"></a>
+<span class="sourceLineNo">106</span>    }<a name="line.106"></a>
+<span class="sourceLineNo">107</span>}<a name="line.107"></a>
 
 
 
